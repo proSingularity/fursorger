@@ -19,6 +19,7 @@
         "prefer-template": true,
         "prettier": true,
         "object-literal-sort-keys": false,
-        "no-unused-expression": false
+        "no-unused-expression": false,
+        "quotemark": [true, "single", "avoid-escape", "avoid-template"]
     }
 }

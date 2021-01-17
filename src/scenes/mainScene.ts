@@ -1,40 +1,44 @@
-import { Graph } from "graphlib";
-import { GameObjects, Scene } from "phaser";
-import { addProductionAnim } from "../anims/addProductionAnim";
-import { PathAnimator } from "../anims/PathAnimator";
-import { BackgroundImage } from "../components/BackgroundImage";
-import { Balloon } from "../components/Balloon";
-import { BuildFactoryButton } from "../components/BuildFactoryButton";
-import { BuildFactoryText } from "../components/BuildFactoryText";
-import { City, CityState } from "../components/City";
-import { CityImage, NodeName } from "../components/CityImage";
-import { CityProductionDisplay } from "../components/CityProductionDisplay";
-import { CityStockDisplay } from "../components/CityStockDisplay";
-import { DottedLine } from "../components/DottedLine";
-import { EditorButton } from "../components/EditorButton";
-import { ExportLevelButton } from "../components/ExportLevelButton";
-import { ImportLevelButton } from "../components/ImportLevelButton";
-import { NameDisplay } from "../components/NameDisplay";
-import { NextLevelButton } from "../components/NextLevelButton";
-import { PlayerStockDisplay } from "../components/PlayerStockDisplay";
-import { PlusMinusButton } from "../components/PlusMinusButton";
-import { RestartButton } from "../components/RestartButton";
-import { Secret } from "../components/Secret";
-import { Shop } from "../components/Shop";
-import { TurnDisplay } from "../components/TurnDisplay";
-import { DEV } from "../dev-config";
-import { ICity, ILevel, IShop } from "../levels/ILevel";
-import { levels } from "../levels/index";
-import { LogicCity } from "../logic/City";
-import { getAllCities, getNode, getNodes } from "../logic/getNode";
-import { INode } from "../logic/INode";
-import { IPlayer } from "../logic/IPlayer";
-import { LogicBuilder } from "../logic/LogicBuilder";
-import { getLevel, setLevel } from "../registry/level";
-import { LevelExporter } from "../utils/LevelExporter";
-import { BadEndScene } from "./badEndScene";
-import { EditorScene } from "./editorScene";
-import { GoodEndScene } from "./GoodEndScene";
+import { Graph } from 'graphlib';
+import { GameObjects, Scene } from 'phaser';
+import { addProductionAnim } from '../anims/addProductionAnim';
+import { PathAnimator } from '../anims/PathAnimator';
+import { BackgroundImage } from '../components/BackgroundImage';
+import { Balloon } from '../components/Balloon';
+import { BuildFactoryButton } from '../components/BuildFactoryButton';
+import { BuildFactoryText } from '../components/BuildFactoryText';
+import { City, CityState } from '../components/City';
+import { CityImage, NodeName } from '../components/CityImage';
+import { CityProductionDisplay } from '../components/CityProductionDisplay';
+import { CityStockDisplay } from '../components/CityStockDisplay';
+import { DottedLine } from '../components/DottedLine';
+import { EditorButton } from '../components/EditorButton';
+import { ExportLevelButton } from '../components/ExportLevelButton';
+import { ImportLevelButton } from '../components/ImportLevelButton';
+import { NameDisplay } from '../components/NameDisplay';
+import { NextLevelButton } from '../components/NextLevelButton';
+import { PlayerStockDisplay } from '../components/PlayerStockDisplay';
+import { PlusMinusButton } from '../components/PlusMinusButton';
+import { RestartButton } from '../components/RestartButton';
+import { Secret } from '../components/Secret';
+import { Shop } from '../components/Shop';
+import { TurnDisplay } from '../components/TurnDisplay';
+import { DEV } from '../dev-config';
+import { ICity, ILevel, IShop } from '../levels/ILevel';
+import { levels } from '../levels/index';
+import { LogicCity } from '../logic/City';
+import { getAllCities, getNode, getNodes } from '../logic/getNode';
+import { INode } from '../logic/INode';
+import { IPlayer } from '../logic/IPlayer';
+import { LogicBuilder } from '../logic/LogicBuilder';
+import { getLevel, setLevel } from '../registry/level';
+import { LevelExporter } from '../utils/LevelExporter';
+import { BadEndScene } from './badEndScene';
+import { EditorScene } from './editorScene';
+import { GoodEndScene } from './GoodEndScene';
+
+export interface IMainSceneInit {
+    level?: ILevel;
+}
 
 export class MainScene extends Scene {
     private player!: IPlayer;
@@ -45,12 +49,15 @@ export class MainScene extends Scene {
     private pathAnimator!: PathAnimator;
 
     constructor() {
-        super({ key: "MainScene" });
+        super({ key: 'MainScene' });
+    }
+
+    public init(data: IMainSceneInit): void {
+        this.currentLevel = data.level || levels[getLevel(this.registry)];
     }
 
     public create(): void {
         this.cameras.main.fadeIn(200);
-        this.currentLevel = levels[getLevel(this.registry)];
         const cityData = this.currentLevel.cities;
         const shopData = this.currentLevel.shops;
         const logicObjects = LogicBuilder.create(this.currentLevel);
@@ -61,7 +68,7 @@ export class MainScene extends Scene {
         this.addShops(shopData);
         this.setNodesStates();
         this.addGui();
-        this.input.keyboard.on("keydown-R", () => this.restart());
+        this.input.keyboard.on('keydown-R', () => this.restart());
         this.addBalloons();
         this.pathAnimator = new PathAnimator(this, this.currentLevel);
         this.currentLevel.secrets?.forEach(
@@ -74,7 +81,7 @@ export class MainScene extends Scene {
     }
 
     public restart() {
-        this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.cameras.main.once('camerafadeoutcomplete', () => {
             this.input.removeAllListeners();
             this.scene.restart();
         });
@@ -119,7 +126,7 @@ export class MainScene extends Scene {
                 () => this.player
             )
         );
-        new EditorButton(this, () => this.goto("EditorScene", EditorScene));
+        new EditorButton(this, () => this.goto('EditorScene', EditorScene));
     }
 
     private handleBuildButtonClicked() {
@@ -155,7 +162,7 @@ export class MainScene extends Scene {
             const shopImage = new CityImage(this, 0, 0, NodeName.Shop, name);
             const buyButton = new PlusMinusButton(
                 this,
-                "plus",
+                'plus',
                 () => {
                     this.player.stock -= price;
                     this.player.factories += 1;
@@ -183,13 +190,13 @@ export class MainScene extends Scene {
         );
         const plusTradeButton = new PlusMinusButton(
             this,
-            "plus",
+            'plus',
             () => this.player.store(),
             () => this.player.stock === 0
         );
         const minusTradeButton = new PlusMinusButton(
             this,
-            "minus",
+            'minus',
             () => this.player.take(),
             () => city.stock === 0
         );
@@ -205,7 +212,7 @@ export class MainScene extends Scene {
     }
 
     private setOnNodeClick(nodeName: string, nodeImage: GameObjects.Image) {
-        nodeImage.on("pointerup", () => {
+        nodeImage.on('pointerup', () => {
             const isValidMovement = this.graph.hasEdge(
                 this.player.locationName,
                 nodeName
@@ -252,11 +259,11 @@ export class MainScene extends Scene {
     }
 
     private win() {
-        this.goto("GoodEndScene", GoodEndScene, { turns: this.player.turn });
+        this.goto('GoodEndScene', GoodEndScene, { turns: this.player.turn });
     }
 
     private lose() {
-        this.scene.add("badEndScene", BadEndScene, true);
+        this.scene.add('badEndScene', BadEndScene, true);
     }
 
     private goto(
@@ -264,7 +271,7 @@ export class MainScene extends Scene {
         sceneClass: new (name: string) => Scene,
         data?: { [key: string]: {} }
     ) {
-        this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.add(key, sceneClass, true, data);
             this.scene.remove(this);
         });

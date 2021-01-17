@@ -1,19 +1,18 @@
-import { GameObjects, Scene } from "phaser";
-import { DEV } from "../dev-config";
-import { setLevel } from "../registry/level";
-import { Color, toHex } from "../styles/Color";
-import { setDefaultTextStyle, TextConfig } from "../styles/Text";
-import { CreditsScene } from "./CreditsScene";
-import { GoodEndScene } from "./GoodEndScene";
-import { MainScene } from "./mainScene";
-import { TitleScene } from "./TitleScene";
+import { GameObjects, Scene } from 'phaser';
+import { DEV } from '../dev-config';
+import { Color, toHex } from '../styles/Color';
+import { setDefaultTextStyle, TextConfig } from '../styles/Text';
+import { CreditsScene } from './CreditsScene';
+import { GoodEndScene } from './GoodEndScene';
+import { MainScene } from './mainScene';
+import { TitleScene } from './TitleScene';
 
 export class LoadingScene extends Scene {
     private halfWidth!: number;
     private halfHeight!: number;
 
     constructor() {
-        super({ key: "Loading" });
+        super({ key: 'Loading' });
     }
 
     public preload() {
@@ -23,7 +22,6 @@ export class LoadingScene extends Scene {
         this.preloadAllAssets();
         this.addTitles();
         this.makeLoadingBar();
-        setLevel(this.registry, DEV.initialLevel || 0);
     }
 
     private preloadAllAssets() {
@@ -31,58 +29,58 @@ export class LoadingScene extends Scene {
         const audio = (filename: string) => `./assets/sounds/${filename}`;
         this.load
             .image(
-                "rectangleButton",
-                " ./assets/images/blank_rectangle60x160.png"
+                'rectangleButton',
+                ' ./assets/images/blank_rectangle60x160.png'
             )
-            .image("goodEnd", img("goodEnd1280×853.jpg"))
-            .image("badEnd", img("badEnd640x512.jpg"))
-            .image("city", img("town-01-inkarnate387x295.png"))
-            .image("background", img("shoaw-whium.jpg"))
-            .image("backpack", img("backpack64x64.png"))
-            .image("hourglass", img("hourglass64x64.png"))
-            .image("background2", img("default-background.jpg"))
-            .image("map-tutorial", img("map-tutorial-1.jpg"))
-            .image("map-wesnoth", img("map-wesnoth.jpg"))
-            .image("buildFactory", img("buildFactoryButton128x128.png"))
-            .image("balloon", img("balloon1600x1600.png"))
-            .image("stock", img("storage64x64.png"))
-            .image("production", img("decreasing-bars64x64.png"))
-            .image("play", img("playArrow300x200.png"))
-            .image("export", img("export180x120.png"))
-            .image("title", img("title.jpg"))
-            .image("banner", img("banner.png"))
-            .image("startArrow", img("StartArrow140x324.png"))
-            .svg("shop", img("shop.svg"))
-            .svg("factory", img("power-plant.svg"))
-            .svg("restart", img("reload64x64.svg"))
-            .svg("arrow-right", img("arrow-right.svg"))
-            .audio("background", audio("bgm.mp3"))
-            .audio("risingMoon", audio("Rising_Moon_By_RandomMind.mp3"))
-            .audio("scribbling", audio("scribbling.mp3"))
+            .image('goodEnd', img('goodEnd1280×853.jpg'))
+            .image('badEnd', img('badEnd640x512.jpg'))
+            .image('city', img('town-01-inkarnate387x295.png'))
+            .image('background', img('shoaw-whium.jpg'))
+            .image('backpack', img('backpack64x64.png'))
+            .image('hourglass', img('hourglass64x64.png'))
+            .image('background2', img('default-background.jpg'))
+            .image('map-tutorial', img('map-tutorial-1.jpg'))
+            .image('map-wesnoth', img('map-wesnoth.jpg'))
+            .image('buildFactory', img('buildFactoryButton128x128.png'))
+            .image('balloon', img('balloon1600x1600.png'))
+            .image('stock', img('storage64x64.png'))
+            .image('production', img('decreasing-bars64x64.png'))
+            .image('play', img('playArrow300x200.png'))
+            .image('export', img('export180x120.png'))
+            .image('title', img('title.jpg'))
+            .image('banner', img('banner.png'))
+            .image('startArrow', img('StartArrow140x324.png'))
+            .svg('shop', img('shop.svg'))
+            .svg('factory', img('power-plant.svg'))
+            .svg('restart', img('reload64x64.svg'))
+            .svg('arrow-right', img('arrow-right.svg'))
+            .audio('background', audio('bgm.mp3'))
+            .audio('risingMoon', audio('Rising_Moon_By_RandomMind.mp3'))
+            .audio('scribbling', audio('scribbling.mp3'))
             .atlas(
-                "shapes",
-                "assets/particles/shapes.png",
-                "./assets/particles/shapes.json"
+                'shapes',
+                'assets/particles/shapes.png',
+                './assets/particles/shapes.json'
             )
             .text(
-                "wind-particle-effect",
-                "./assets/particles/wind-particle-effect.json"
+                'wind-particle-effect',
+                './assets/particles/wind-particle-effect.json'
             )
-            .spritesheet("octagon", img("octagon.png"), {
+            .spritesheet('octagon', img('octagon.png'), {
                 frameWidth: 168,
                 frameHeight: 168,
             })
-            .spritesheet("plus", img("plus-extra.png"), {
+            .spritesheet('plus', img('plus-extra.png'), {
                 frameWidth: 74,
                 frameHeight: 74,
                 spacing: 40,
             })
-            .spritesheet("wagon", img("wagon.png"), {
+            .spritesheet('wagon', img('wagon.png'), {
                 frameWidth: 261 / 3,
                 frameHeight: 252 / 3,
                 // spacing: 5,
             })
-            .spritesheet("minus", img("minus-extra.png"), {
+            .spritesheet('minus', img('minus-extra.png'), {
                 frameWidth: 74,
                 frameHeight: 74,
                 spacing: 40,
@@ -93,9 +91,9 @@ export class LoadingScene extends Scene {
         const loadingText = this.make.text({
             x: this.halfWidth,
             y: this.halfHeight - 50,
-            text: "Loading...",
+            text: 'Loading...',
             style: {
-                font: "30px Metamorphous",
+                font: '30px Metamorphous',
                 fill: Color.White,
             },
         });
@@ -114,25 +112,25 @@ export class LoadingScene extends Scene {
         const assetText = this.make.text({
             x: this.halfWidth,
             y: this.halfHeight + 65,
-            text: "",
+            text: '',
             style: {
-                font: "18px Metamorphous",
+                font: '18px Metamorphous',
                 fill: Color.White,
             },
         });
         assetText.setOrigin(0.5);
 
-        this.load.on("progress", this.getProgressBarFiller(progressBar));
-        this.load.on("fileprogress", this.getAssetTextWriter(assetText));
-        this.load.on("complete", () => {
+        this.load.on('progress', this.getProgressBarFiller(progressBar));
+        this.load.on('fileprogress', this.getAssetTextWriter(assetText));
+        this.load.on('complete', () => {
             if (DEV.startInWinScene) {
-                this.scene.add("GoodEndScene", GoodEndScene, true);
+                this.scene.add('GoodEndScene', GoodEndScene, true);
             } else if (DEV.skipTitle) {
-                this.scene.add("MainScene", MainScene, true);
+                this.scene.add('MainScene', MainScene, true);
             } else if (DEV.startInCredits) {
-                this.scene.add("CreditsScene", CreditsScene, true);
+                this.scene.add('CreditsScene', CreditsScene, true);
             } else {
-                this.scene.add("TitleScene", TitleScene, true);
+                this.scene.add('TitleScene', TitleScene, true);
             }
             this.scene.remove(this);
         });
@@ -166,7 +164,7 @@ export class LoadingScene extends Scene {
             .text(
                 this.halfWidth,
                 this.halfHeight - 200,
-                "Der Fürsorger",
+                'Der Fürsorger',
                 TextConfig.title
             )
             .setOrigin(0.5);
@@ -175,7 +173,7 @@ export class LoadingScene extends Scene {
             .text(
                 this.halfWidth,
                 this.halfHeight - 120,
-                "This world is dying. Can you save us?"
+                'This world is dying. Can you save us?'
             )
             .setOrigin(0.5);
         setDefaultTextStyle(subtitle);

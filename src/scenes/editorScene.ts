@@ -1,17 +1,21 @@
-import { saveAs } from "file-saver";
-import { GameObjects, Scene } from "phaser";
-import { BackgroundImage } from "../components/BackgroundImage";
-import { ILevel } from "../levels/ILevel";
-import { MainScene } from "./mainScene";
+import { saveAs } from 'file-saver';
+import { GameObjects, Scene } from 'phaser';
+import { BackgroundImage } from '../components/BackgroundImage';
+import { ILevel } from '../levels/ILevel';
+import { MainScene } from './mainScene';
 
 const textStyle = {
-    font: "48px Metamorphous",
-    fill: "#000000",
+    font: '48px Metamorphous',
+    fill: '#000000',
 };
+
 const textToIconOffset = -25;
 const NAME_TEXT_TO_BUTTON_OFFSET = 20;
 const PRODUCTION_INDEX = 2;
 const STOCK_INDEX = 1;
+
+const STORED_LEVEL_KEY = 'STORE_EDITOR';
+
 export class EditorScene extends Scene {
     private containerArray!: GameObjects.Container[];
     private backpackContainer!: GameObjects.Container;
@@ -25,7 +29,7 @@ export class EditorScene extends Scene {
 
     constructor() {
         super({
-            key: "EditorScene",
+            key: 'EditorScene',
         });
     }
 
@@ -34,7 +38,7 @@ export class EditorScene extends Scene {
 
         this.backpack = 0;
 
-        new BackgroundImage(this, "background2");
+        new BackgroundImage(this, 'background2');
         this.travelPathLines = this.add.graphics({
             lineStyle: { width: 4, color: 0x0 },
         });
@@ -47,17 +51,17 @@ export class EditorScene extends Scene {
         this.addBackpackContainer();
         this.addExportLevelButton();
         this.addMainSceneButton();
-        const textField = document.createElement("input");
-        textField.type = "text";
-        textField.id = "text";
+        const textField = document.createElement('input');
+        textField.type = 'text';
+        textField.id = 'text';
         this.add.dom(100, 50, textField);
-        textField.addEventListener("change", () => {
+        textField.addEventListener('change', () => {
             if (this.selectedContainer.length === 1) {
                 const oldContainerName = this.selectedContainer[0].name;
                 this.selectedContainer[0].name = textField.value;
                 this.adjustPathsToNameChange(oldContainerName, textField.value);
             }
-            textField.value = "";
+            textField.value = '';
         });
     }
 
@@ -85,13 +89,13 @@ export class EditorScene extends Scene {
 
     private addStartIcon() {
         this.startIcon = this.add
-            .image(550, 360, "startArrow")
+            .image(550, 360, 'startArrow')
             .setInteractive();
         this.startIcon.setScale(0.3, 0.3);
         this.input.setDraggable(this.startIcon);
-        this.startIcon.on("pointerdown", () => {
+        this.startIcon.on('pointerdown', () => {
             this.noStartIconDrag = false;
-            this.startIcon.once("pointerup", () => {
+            this.startIcon.once('pointerup', () => {
                 this.updateStartIconPosition();
                 this.noStartIconDrag = true;
             });
@@ -132,11 +136,11 @@ export class EditorScene extends Scene {
         const backpackY = 40;
         const backpackTextY = backpackY - 25;
         const backpackTextX = backpackX + 40;
-        const backpackImage = this.add.image(backpackX, backpackY, "backpack");
+        const backpackImage = this.add.image(backpackX, backpackY, 'backpack');
         const backpackText = this.add.text(
             backpackTextX,
             backpackTextY,
-            "",
+            '',
             textStyle
         );
 
@@ -144,18 +148,18 @@ export class EditorScene extends Scene {
         const backpackButtonX = backpackX - 50;
 
         const backpackPlus = this.add
-            .image(backpackButtonX, backpackButtonY - 20, "plus")
+            .image(backpackButtonX, backpackButtonY - 20, 'plus')
             .setScale(0.5)
             .setInteractive();
         const backpackMinus = this.add
-            .image(backpackButtonX, backpackButtonY + 20, "minus")
+            .image(backpackButtonX, backpackButtonY + 20, 'minus')
             .setScale(0.5)
             .setInteractive();
 
-        backpackPlus.on("pointerup", () => {
+        backpackPlus.on('pointerup', () => {
             this.backpack += 1;
         });
-        backpackMinus.on("pointerup", () => {
+        backpackMinus.on('pointerup', () => {
             if (this.backpack > 0) {
                 this.backpack -= 1;
             }
@@ -217,7 +221,7 @@ export class EditorScene extends Scene {
     }
 
     private creationButtonClicked() {
-        const button = this.add.image(0, 0, "rectangleButton");
+        const button = this.add.image(0, 0, 'rectangleButton');
         const container = this.add.container(230, 170, [button]);
         // setSize() is crucial to avoid "gameObject.input is null"
         container.setSize(button.width, button.height);
@@ -246,7 +250,7 @@ export class EditorScene extends Scene {
     }
 
     private defineContainerClickDown(container: GameObjects.Container) {
-        container.on("pointerdown", () =>
+        container.on('pointerdown', () =>
             this.defineContainerClickUp(container)
         );
     }
@@ -264,8 +268,8 @@ export class EditorScene extends Scene {
 
     private defineContainerClickUp(container: GameObjects.Container) {
         // otherwise previous pointerup-listeners will stack
-        container.off("pointerup");
-        container.on("pointerup", () => {
+        container.off('pointerup');
+        container.on('pointerup', () => {
             this.selectedContainer.push(container);
             if (this.selectedContainer.length === 2) {
                 this.resetContainerButtonColor(this.selectedContainer[0]);
@@ -281,12 +285,12 @@ export class EditorScene extends Scene {
     }
 
     private defineContainerDrag(container: GameObjects.Container) {
-        this.input.on("drag", (pointer, gameObject, dragX, dragY) => {
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
             gameObject.x = dragX;
             gameObject.y = dragY;
             this.updateEdges();
             // to prevent turn advance after dragging
-            container.off("pointerup");
+            container.off('pointerup');
         });
     }
 
@@ -308,10 +312,10 @@ export class EditorScene extends Scene {
 
     private addCityCreationButton() {
         const creationButton = this.add
-            .image(this.scale.width - 100, this.scale.height - 100, "plus")
+            .image(this.scale.width - 100, this.scale.height - 100, 'plus')
             .setInteractive();
 
-        creationButton.on("pointerup", () => {
+        creationButton.on('pointerup', () => {
             this.creationButtonClicked();
         });
     }
@@ -320,7 +324,7 @@ export class EditorScene extends Scene {
         const cityPair = this.selectedContainer;
         if (cityPair.length !== 2) {
             throw new Error(
-                "selectedCities has wrong length for redrawEdges()"
+                'selectedCities has wrong length for redrawEdges()'
             );
         }
         const firstName = cityPair[0].name;
@@ -353,64 +357,63 @@ export class EditorScene extends Scene {
     }
 
     private addEconomy(container: GameObjects.Container) {
-        const imageX = 0;
         const stockY = -60;
         const prodY = 60;
         const buttonX = 100;
         const stockButtonY = stockY;
         const prodButtonY = prodY;
 
-        const stock = this.add.image(0, stockY, "stock");
+        const stock = this.add.image(0, stockY, 'stock');
         const stockText = this.add.text(
             0 + 40,
             stockY + textToIconOffset,
-            "",
+            '',
             textStyle
         );
         stockText.w = 0;
-        const production = this.add.image(0, prodY, "production");
+        const production = this.add.image(0, prodY, 'production');
         const prodText = this.add.text(
             0 + 40,
             prodY + textToIconOffset,
-            "",
+            '',
             textStyle
         );
         prodText.w = 0;
         container.add([stockText, prodText, stock, production]);
 
         const plusStock = this.add
-            .image(buttonX, stockButtonY - 20, "plus")
+            .image(buttonX, stockButtonY - 20, 'plus')
             .setScale(0.5)
             .setInteractive();
-        plusStock.on("pointerup", () => {
+        plusStock.on('pointerup', () => {
             this.addContainerStock(container, 1);
         });
         plusStock.setVisible(false);
 
         const minusStock = this.add
-            .image(buttonX, stockButtonY + 20, "minus")
+            .image(buttonX, stockButtonY + 20, 'minus')
             .setScale(0.5)
             .setInteractive();
-        minusStock.on("pointerup", () => {
+        minusStock.on('pointerup', () => {
             this.addContainerStock(container, -1);
         });
         minusStock.setVisible(false);
 
         const plusProd = this.add
-            .image(buttonX, prodButtonY - 20, "plus")
+            .image(buttonX, prodButtonY - 20, 'plus')
             .setScale(0.5)
             .setInteractive();
-        plusProd.on("pointerup", () => {
+        plusProd.on('pointerup', () => {
             this.addContainerProduction(container, 1);
         });
         plusProd.setVisible(false);
 
         const minusProd = this.add
-            .image(buttonX, prodButtonY + 20, "minus")
+            .image(buttonX, prodButtonY + 20, 'minus')
             .setScale(0.5)
             .setInteractive();
 
-        minusProd.on("pointerup", () => {
+        minusProd.on('pointerup', () => {
             this.addContainerProduction(container, -1);
         });
 
@@ -444,36 +447,41 @@ export class EditorScene extends Scene {
             cities,
             travelPaths,
             player: { stock: this.backpack, location: this.startCity.name },
-            background: "background2",
+            background: 'background2',
         };
     }
 
     private addExportLevelButton() {
         const button = this.add
-            .image(60, 540, "export")
+            .image(60, 540, 'export')
             .setInteractive()
             .setScale(100 / 180);
         const saveToFile = () => {
             const data = JSON.stringify(this.generateLevel(), null, 4);
             const blob = new Blob([data], {
-                type: "application/json",
+                type: 'application/json',
             });
-            saveAs(blob, "level.json");
+            saveAs(blob, 'level.json');
         };
-        button.on("pointerup", saveToFile);
+        button.on('pointerup', saveToFile);
     }
 
     private addMainSceneButton() {
         const button = this.add
-            .image(220, 540, "play")
+            .image(220, 540, 'play')
             .setInteractive()
             .setScale(100 / 200);
 
-        button.on("pointerup", () => {
-            this.scene.add("mainScene", MainScene, true, { x: 400, y: 300 });
-            this.scene.remove(this);
-            const textField = document.getElementById("text");
+        button.on('pointerup', () => {
+            const tryOutLevel = this.generateLevel();
+            this.scene.add('mainScene', MainScene, true, {
+                level: tryOutLevel,
+            });
+            const jsonTryOutLevel = JSON.stringify(tryOutLevel);
+            localStorage.setItem(STORED_LEVEL_KEY, jsonTryOutLevel);
+            const textField = document.getElementById('text');
             textField.remove();
+            this.scene.remove(this);
         });
     }
 }
