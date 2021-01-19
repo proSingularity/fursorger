@@ -1,7 +1,9 @@
 import { saveAs } from 'file-saver';
 import { GameObjects, Scene } from 'phaser';
 import { BackgroundImage } from '../components/BackgroundImage';
-import { ILevel } from '../levels/ILevel';
+import { CityContainer, IEconomyHandlers } from '../components/CityContainer';
+import { ICity, ILevel } from '../levels/ILevel';
+import { Color, toHex } from '../styles/Color';
 import { MainScene } from './mainScene';
 
 const textStyle = {
@@ -9,23 +11,48 @@ const textStyle = {
     fill: '#000000',
 };
 
-const textToIconOffset = -25;
-const NAME_TEXT_TO_BUTTON_OFFSET = 20;
-const PRODUCTION_INDEX = 2;
 const STOCK_INDEX = 1;
 
 const STORED_LEVEL_KEY = 'STORE_EDITOR';
 
 export class EditorScene extends Scene {
-    private containerArray!: GameObjects.Container[];
+    private containerArray!: CityContainer[];
     private backpackContainer!: GameObjects.Container;
-    private backpack: number;
     private travelPathLines!: GameObjects.Graphics;
-    private selectedContainer!: GameObjects.Container[];
-    private paths!: Array<{ first: string; second: string }>;
     private startIcon!: GameObjects.Image;
-    private startCity!: GameObjects.Container;
     private noStartIconDrag!: boolean;
+
+    // TODO: Orientate on components from file for container extraction and free them of this.level.city..., instead write them like components from component fiel...
+    private level: ILevel = {
+        name: 'My Level',
+        cities: [
+            {
+                name: 'Rome',
+                production: 0,
+                stock: 0,
+                x: 900,
+                y: 350,
+            },
+            {
+                name: 'Cathargo',
+                production: 0,
+                stock: 0,
+                x: 200,
+                y: 300,
+            },
+        ],
+        travelPaths: [
+            {
+                first: 'Rome',
+                second: 'Cathargo',
+            },
+        ],
+        background: 'background2',
+        player: {
+            stock: 0,
+            location: 'Rome',
+        },
+    };
 
     constructor() {
         super({
@@ -34,19 +61,18 @@ export class EditorScene extends Scene {
     }
 
     public create(): void {
-        // TODO #55 consider moving into title screen
-
-        this.backpack = 0;
-
-        new BackgroundImage(this, 'background2');
+        // TODO #267 this.level = JSON.parse(localStorage.getItem(..) || this.level; // etc
+        new BackgroundImage(this, this.level.background);
         this.travelPathLines = this.add.graphics({
-            lineStyle: { width: 4, color: 0x0 },
+            lineStyle: { width: 4, color: toHex(Color.Black) },
         });
+
         this.containerArray = [];
-        this.paths = [];
+        this.level.cities.forEach(city => {
+            this.addNewCityContainer(city);
+        });
         this.noStartIconDrag = true;
         this.addStartIcon();
-        this.selectedContainer = [];
         this.addCityCreationButton();
         this.addBackpackContainer();
         this.addExportLevelButton();
@@ -56,9 +82,10 @@ export class EditorScene extends Scene {
         textField.id = 'text';
         this.add.dom(100, 50, textField);
         textField.addEventListener('change', () => {
-            if (this.selectedContainer.length === 1) {
-                const oldContainerName = this.selectedContainer[0].name;
-                this.selectedContainer[0].name = textField.value;
+            const focusedCity = this.getActivatedCities()[0];
+            if (focusedCity) {
+                const oldContainerName = focusedCity.name;
+                focusedCity.setName(textField.value);
                 this.adjustPathsToNameChange(oldContainerName, textField.value);
             }
             textField.value = '';
@@ -66,7 +93,7 @@ export class EditorScene extends Scene {
     }
 
     public adjustPathsToNameChange(oldName: string, newName: string) {
-        this.paths.forEach(path => {
+        this.level.travelPaths.forEach(path => {
             if (path.first === oldName) {
                 path.first = newName;
             }
@@ -77,14 +104,31 @@ export class EditorScene extends Scene {
     }
 
     public update() {
-        this.updateEdges();
-        this.updateTextAndButton();
+        this.updateEdgeSlopes();
+        this.updateEdgeSetting();
+        this.containerArray.forEach(city => city.update());
         (this.backpackContainer.getAt(0) as GameObjects.Text).setText(
-            this.backpack.toString()
+            this.level.player.stock.toString()
         );
-        if (this.startCity !== undefined && this.noStartIconDrag) {
-            this.moveStartIconToCity(this.startCity);
+        if (this.noStartIconDrag) {
+            this.moveStartIconToCity(this.level.player.location);
         }
+    }
+
+    private updateEdgeSetting() {
+        const activatedCities = this.getActivatedCities();
+        if (activatedCities.length === 2) {
+            activatedCities[0].deactivate();
+            activatedCities[1].deactivate();
+            this.redrawEdgesAfterContainerClick({
+                container: activatedCities[0],
+                otherContainer: activatedCities[1],
+            });
+        }
+    }
+
+    private getActivatedCities() {
+        return this.containerArray.filter(city => city.isChosen());
     }
 
     private addStartIcon() {
@@ -93,6 +137,14 @@ export class EditorScene extends Scene {
             .setInteractive();
         this.startIcon.setScale(0.3, 0.3);
         this.input.setDraggable(this.startIcon);
+        this.defineStartIconEvents();
+    }
+
+    private defineStartIconEvents() {
+        this.startIcon.on('drag', (pointer, dragX, dragY) => {
+            this.startIcon.x = dragX;
+            this.startIcon.y = dragY;
+        });
         this.startIcon.on('pointerdown', () => {
             this.noStartIconDrag = false;
             this.startIcon.once('pointerup', () => {
@@ -104,7 +156,7 @@ export class EditorScene extends Scene {
 
     private updateStartIconPosition() {
         this.containerArray.forEach(container => {
-            // orientate on size of button which will change size
+            // adjust to size of button which will change size
             const button = container.getAt(0) as GameObjects.Image;
             const width = button.width * button.scaleX;
             const height = button.height * button.scaleY;
@@ -113,15 +165,18 @@ export class EditorScene extends Scene {
                     width / 2 &&
                 Math.abs(container.y - this.getStartIconPoint().y) < height / 2
             ) {
-                this.startCity = container;
-                this.moveStartIconToCity(container);
+                this.level.player.location = container.name;
+                this.moveStartIconToCity(container.name);
             }
         });
     }
 
-    private moveStartIconToCity(container: GameObjects.Container) {
-        this.startIcon.x = container.x - 50;
-        this.startIcon.y = container.y - 80;
+    private moveStartIconToCity(startCityName: string) {
+        const startCityContainer = this.containerArray.find(
+            container => container.name === startCityName
+        );
+        this.startIcon.x = startCityContainer.x - 50;
+        this.startIcon.y = startCityContainer.y - 80;
     }
 
     private getStartIconPoint() {
@@ -157,11 +212,11 @@ export class EditorScene extends Scene {
             .setInteractive();
 
         backpackPlus.on('pointerup', () => {
-            this.backpack += 1;
+            this.level.player.stock += 1;
         });
         backpackMinus.on('pointerup', () => {
-            if (this.backpack > 0) {
-                this.backpack -= 1;
+            if (this.level.player.stock > 0) {
+                this.level.player.stock -= 1;
             }
         });
 
@@ -175,12 +230,12 @@ export class EditorScene extends Scene {
         this.backpackContainer = backpackContainer;
     }
 
-    private updateEdges() {
+    private updateEdgeSlopes() {
         this.travelPathLines.clear();
         this.travelPathLines = this.add.graphics({
             lineStyle: { width: 4, color: 0x0 },
         });
-        this.paths.forEach(path => {
+        this.level.travelPaths.forEach(path => {
             const nodeV = this.containerArray.find(
                 container => path.first === container.name
             );
@@ -197,117 +252,48 @@ export class EditorScene extends Scene {
         });
     }
 
-    private updateTextAndButton() {
-        this.containerArray.forEach(container => {
-            const prodText = container.getAt(
-                PRODUCTION_INDEX
-            ) as GameObjects.Text;
-            prodText.setText(prodText.w.toString());
-            const stockText = container.getAt(STOCK_INDEX) as GameObjects.Text;
-            stockText.setText(stockText.w.toString());
-            const nameText = container.getAt(
-                container.length - 1
-            ) as GameObjects.Text;
-            nameText.setText(container.name);
-            const button = container.getAt(0) as GameObjects.Image;
-            const xScale =
-                (nameText.width + 2 * NAME_TEXT_TO_BUTTON_OFFSET) /
-                button.width;
-            button.setScale(xScale, 1);
-            nameText.x =
-                (-button.width * xScale) / 2 + NAME_TEXT_TO_BUTTON_OFFSET;
-            nameText.y = -button.height / 2;
-        });
-    }
+    private addNewCityContainer(
+        city: ICity = {
+            production: -1,
+            stock: 5,
+            name: this.level.cities.length.toString(),
+            x: 300,
+            y: 400,
+        }
+    ) {
+        const indexOfNewCity = this.level.cities.push(city) - 1;
+        const cityInList = this.level.cities[indexOfNewCity];
+        const newEconomy = { stock: city.stock, production: city.production };
+        const stockAdd = (summand: number) => {
+            cityInList.stock += summand;
+        };
+        const productionAdd = (summand: number) => {
+            cityInList.production += summand;
+        };
+        const onTranslation = (x: number, y: number) => {
+            cityInList.x = x;
+            cityInList.y = y;
+        };
 
-    private creationButtonClicked() {
-        const button = this.add.image(0, 0, 'rectangleButton');
-        const container = this.add.container(230, 170, [button]);
-        // setSize() is crucial to avoid "gameObject.input is null"
-        container.setSize(button.width, button.height);
-        this.addEconomy(container);
-        this.addNameText(container);
-        container.setInteractive();
-        container.setName(this.containerArray.length.toString());
-        container.setDepth(1);
-        this.input.setDraggable(container);
-        this.defineContainerDrag(container);
-        this.defineContainerClickUp(container);
-        this.defineContainerClickDown(container);
-        this.containerArray.push(container);
-    }
-
-    private addNameText(container: GameObjects.Container) {
-        const textField = this.add.text(0, 0, container.name, textStyle);
-        container.add(textField);
-    }
-
-    private setButtonVisible(isVisible: boolean) {
-        const buttonArray = this.selectedContainer[0].getAll().slice(5, 9);
-        buttonArray.forEach(button => {
-            (button as GameObjects.Image).setVisible(isVisible);
-        });
-    }
-
-    private defineContainerClickDown(container: GameObjects.Container) {
-        container.on('pointerdown', () =>
-            this.defineContainerClickUp(container)
+        this.containerArray.push(
+            new CityContainer(
+                this,
+                city.x,
+                city.y,
+                city.name,
+                newEconomy,
+                {
+                    addToProduction: productionAdd,
+                    addToStock: stockAdd,
+                } as IEconomyHandlers,
+                onTranslation
+            )
         );
     }
 
-    private setContainerButtonColor(
-        container: GameObjects.Container,
-        hex: number
-    ) {
-        (container.getAt(0) as GameObjects.Image).setTint(hex);
-    }
-
-    private resetContainerButtonColor(container: GameObjects.Container) {
-        (container.getAt(0) as GameObjects.Image).clearTint();
-    }
-
-    private defineContainerClickUp(container: GameObjects.Container) {
-        // otherwise previous pointerup-listeners will stack
-        container.off('pointerup');
-        container.on('pointerup', () => {
-            this.selectedContainer.push(container);
-            if (this.selectedContainer.length === 2) {
-                this.resetContainerButtonColor(this.selectedContainer[0]);
-                this.resetContainerButtonColor(this.selectedContainer[1]);
-                this.setButtonVisible(false);
-                this.redrawEdges();
-                this.selectedContainer = [];
-            } else {
-                this.setContainerButtonColor(container, 0x44ff44);
-                this.setButtonVisible(true);
-            }
-        });
-    }
-
-    private defineContainerDrag(container: GameObjects.Container) {
-        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-            gameObject.x = dragX;
-            gameObject.y = dragY;
-            this.updateEdges();
-            // to prevent turn advance after dragging
-            container.off('pointerup');
-        });
-    }
-
-    private addContainerStock(
-        container: GameObjects.Container,
-        stockAdd: number
-    ) {
-        (container.getAt(STOCK_INDEX) as GameObjects.Text).w += stockAdd;
-    }
-
-    private addContainerProduction(
-        container: GameObjects.Container,
-        productionAdd: number
-    ) {
-        (container.getAt(
-            PRODUCTION_INDEX
-        ) as GameObjects.Text).w += productionAdd;
+    private creationButtonClicked() {
+        const containerName = this.containerArray.length.toString();
+        this.addNewCityContainer();
     }
 
     private addCityCreationButton() {
@@ -320,135 +306,30 @@ export class EditorScene extends Scene {
         });
     }
 
-    private redrawEdges() {
-        const cityPair = this.selectedContainer;
-        if (cityPair.length !== 2) {
-            throw new Error(
-                'selectedCities has wrong length for redrawEdges()'
-            );
-        }
-        const firstName = cityPair[0].name;
-        const secondName = cityPair[1].name;
+    private redrawEdgesAfterContainerClick(cityPair: {
+        container: CityContainer;
+        otherContainer: CityContainer;
+    }) {
+        const firstName = cityPair.container.name;
+        const secondName = cityPair.otherContainer.name;
 
         if (!this.deletePath(firstName, secondName)) {
-            if (firstName === secondName) {
-                this.selectedContainer = [];
-            } else {
-                this.paths.push({ first: firstName, second: secondName });
-            }
+            this.level.travelPaths.push({
+                first: firstName,
+                second: secondName,
+            });
         }
     }
 
     private deletePath(firstName: string, secondName: string) {
-        const remainingPaths = [];
-        let didDelete = false;
-        this.paths.forEach(path => {
-            if (
-                (path.first === firstName && path.second === secondName) ||
-                (path.first === secondName && path.second === firstName)
-            ) {
-                didDelete = true;
-            } else {
-                remainingPaths.push(path);
-            }
-        });
-        this.paths = remainingPaths;
-        return didDelete;
-    }
-
-    private addEconomy(container: GameObjects.Container) {
-        const stockY = -60;
-        const prodY = 60;
-        const buttonX = 100;
-        const stockButtonY = stockY;
-        const prodButtonY = prodY;
-
-        const stock = this.add.image(0, stockY, 'stock');
-        const stockText = this.add.text(
-            0 + 40,
-            stockY + textToIconOffset,
-            '',
-            textStyle
+        const oldNumberOfPaths = this.level.travelPaths.length;
+        const remainingPaths = this.level.travelPaths.filter(
+            path =>
+                (path.first !== firstName || path.second !== secondName) &&
+                (path.first !== secondName || path.second !== firstName)
         );
-        stockText.w = 0;
-        const production = this.add.image(0, prodY, 'production');
-        const prodText = this.add.text(
-            0 + 40,
-            prodY + textToIconOffset,
-            '',
-            textStyle
-        );
-        prodText.w = 0;
-        container.add([stockText, prodText, stock, production]);
-
-        const plusStock = this.add
-            .image(buttonX, stockButtonY - 20, 'plus')
-            .setScale(0.5)
-            .setInteractive();
-        plusStock.on('pointerup', () => {
-            this.addContainerStock(container, 1);
-        });
-        plusStock.setVisible(false);
-
-        const minusStock = this.add
-            .image(buttonX, stockButtonY + 20, 'minus')
-            .setScale(0.5)
-            .setInteractive();
-        minusStock.on('pointerup', () => {
-            this.addContainerStock(container, -1);
-        });
-        minusStock.setVisible(false);
-
-        const plusProd = this.add
-            .image(buttonX, prodButtonY - 20, 'plus')
-            .setScale(0.5)
-            .setInteractive();
-        plusProd.on('pointerup', () => {
-            this.addContainerProduction(container, 1);
-        });
-        plusProd.setVisible(false);
-
-        const minusProd = this.add
-            .image(buttonX, prodButtonY + 20, 'minus')
-            .setScale(0.5)
-            .setInteractive();
-
-        minusProd.on('pointerup', () => {
-            this.addContainerProduction(container, -1);
-        });
-
-        minusProd.setVisible(false);
-
-        container.add([plusStock, minusStock, plusProd, minusProd]);
-    }
-
-    private productionOfCity(container: GameObjects.Container) {
-        return (container.getAt(PRODUCTION_INDEX) as GameObjects.Text).w;
-    }
-
-    private stockOfCity(container: GameObjects.Container) {
-        return (container.getAt(STOCK_INDEX) as GameObjects.Text).w;
-    }
-
-    private generateLevel(): ILevel {
-        const cities = this.containerArray.map(container => {
-            return {
-                name: container.name,
-                stock: this.stockOfCity(container),
-                production: this.productionOfCity(container),
-                x: Math.floor(container.x),
-                y: Math.floor(container.y),
-            };
-        });
-
-        const travelPaths = this.paths;
-
-        return {
-            cities,
-            travelPaths,
-            player: { stock: this.backpack, location: this.startCity.name },
-            background: 'background2',
-        };
+        this.level.travelPaths = remainingPaths;
+        return oldNumberOfPaths > remainingPaths.length;
     }
 
     private addExportLevelButton() {
@@ -457,7 +338,7 @@ export class EditorScene extends Scene {
             .setInteractive()
             .setScale(100 / 180);
         const saveToFile = () => {
-            const data = JSON.stringify(this.generateLevel(), null, 4);
+            const data = JSON.stringify(this.level, null, 4);
             const blob = new Blob([data], {
                 type: 'application/json',
             });
@@ -473,7 +354,7 @@ export class EditorScene extends Scene {
             .setScale(100 / 200);
 
         button.on('pointerup', () => {
-            const tryOutLevel = this.generateLevel();
+            const tryOutLevel = this.level;
             this.scene.add('mainScene', MainScene, true, {
                 level: tryOutLevel,
             });
