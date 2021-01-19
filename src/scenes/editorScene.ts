@@ -1,15 +1,11 @@
 import { saveAs } from 'file-saver';
 import { GameObjects, Scene } from 'phaser';
 import { BackgroundImage } from '../components/BackgroundImage';
+import { BackpackContainer } from '../components/BackPackContainer';
 import { CityContainer, IEconomyHandlers } from '../components/CityContainer';
 import { ICity, ILevel } from '../levels/ILevel';
 import { Color, toHex } from '../styles/Color';
 import { MainScene } from './mainScene';
-
-const textStyle = {
-    font: '48px Metamorphous',
-    fill: '#000000',
-};
 
 const STOCK_INDEX = 1;
 
@@ -17,7 +13,6 @@ const STORED_LEVEL_KEY = 'STORE_EDITOR';
 
 export class EditorScene extends Scene {
     private containerArray!: CityContainer[];
-    private backpackContainer!: GameObjects.Container;
     private travelPathLines!: GameObjects.Graphics;
     private startIcon!: GameObjects.Image;
     private noStartIconDrag!: boolean;
@@ -66,7 +61,6 @@ export class EditorScene extends Scene {
         this.travelPathLines = this.add.graphics({
             lineStyle: { width: 4, color: toHex(Color.Black) },
         });
-
         this.containerArray = [];
         this.level.cities.forEach(city => {
             this.addNewCityContainer(city);
@@ -107,9 +101,6 @@ export class EditorScene extends Scene {
         this.updateEdgeSlopes();
         this.updateEdgeSetting();
         this.containerArray.forEach(city => city.update());
-        (this.backpackContainer.getAt(0) as GameObjects.Text).setText(
-            this.level.player.stock.toString()
-        );
         if (this.noStartIconDrag) {
             this.moveStartIconToCity(this.level.player.location);
         }
@@ -187,47 +178,17 @@ export class EditorScene extends Scene {
     }
 
     private addBackpackContainer() {
-        const backpackX = 680;
-        const backpackY = 40;
-        const backpackTextY = backpackY - 25;
-        const backpackTextX = backpackX + 40;
-        const backpackImage = this.add.image(backpackX, backpackY, 'backpack');
-        const backpackText = this.add.text(
-            backpackTextX,
-            backpackTextY,
-            '',
-            textStyle
-        );
-
-        const backpackButtonY = backpackY + backpackImage.height / 2 - 25;
-        const backpackButtonX = backpackX - 50;
-
-        const backpackPlus = this.add
-            .image(backpackButtonX, backpackButtonY - 20, 'plus')
-            .setScale(0.5)
-            .setInteractive();
-        const backpackMinus = this.add
-            .image(backpackButtonX, backpackButtonY + 20, 'minus')
-            .setScale(0.5)
-            .setInteractive();
-
-        backpackPlus.on('pointerup', () => {
-            this.level.player.stock += 1;
-        });
-        backpackMinus.on('pointerup', () => {
-            if (this.level.player.stock > 0) {
-                this.level.player.stock -= 1;
+        new BackpackContainer(
+            this,
+            0,
+            0,
+            () => {
+                this.level.player.stock--;
+            },
+            () => {
+                this.level.player.stock++;
             }
-        });
-
-        const backpackContainer = this.add.container(0, 0, [
-            backpackText,
-            backpackImage,
-            backpackPlus,
-            backpackMinus,
-        ]);
-
-        this.backpackContainer = backpackContainer;
+        );
     }
 
     private updateEdgeSlopes() {
