@@ -1,8 +1,8 @@
-import { cloneDeep } from "lodash";
-import { GameObjects } from "phaser";
-import { CoveredWagon } from "../components/CoveredWagon";
-import { DEV } from "../dev-config";
-import { ILevel } from "../levels/ILevel";
+import { cloneDeep } from 'lodash';
+import { GameObjects } from 'phaser';
+import { CoveredWagon } from '../components/CoveredWagon';
+import { DEV } from '../dev-config';
+import { ILevel } from '../levels/ILevel';
 
 export class PathAnimator {
     private wagon?: GameObjects.PathFollower;

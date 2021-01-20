@@ -3,11 +3,10 @@ import { GameObjects, Scene } from 'phaser';
 import { BackgroundImage } from '../components/BackgroundImage';
 import { BackpackContainer } from '../components/BackPackContainer';
 import { CityContainer, IEconomyHandlers } from '../components/CityContainer';
+import { defaultLevel } from '../levels/defaultLevel';
 import { ICity, ILevel } from '../levels/ILevel';
 import { Color, toHex } from '../styles/Color';
 import { MainScene } from './mainScene';
-
-const STOCK_INDEX = 1;
 
 const STORED_LEVEL_KEY = 'STORE_EDITOR';
 
@@ -18,36 +17,7 @@ export class EditorScene extends Scene {
     private noStartIconDrag!: boolean;
 
     // TODO: Orientate on components from file for container extraction and free them of this.level.city..., instead write them like components from component fiel...
-    private level: ILevel = {
-        name: 'My Level',
-        cities: [
-            {
-                name: 'Rome',
-                production: 0,
-                stock: 0,
-                x: 900,
-                y: 350,
-            },
-            {
-                name: 'Cathargo',
-                production: 0,
-                stock: 0,
-                x: 200,
-                y: 300,
-            },
-        ],
-        travelPaths: [
-            {
-                first: 'Rome',
-                second: 'Cathargo',
-            },
-        ],
-        background: 'background2',
-        player: {
-            stock: 0,
-            location: 'Rome',
-        },
-    };
+    private level!: ILevel;
 
     constructor() {
         super({
@@ -63,7 +33,7 @@ export class EditorScene extends Scene {
         });
         this.containerArray = [];
         this.level.cities.forEach(city => {
-            this.addNewCityContainer(city);
+            this.addNewCityContainer(false, city);
         });
         this.noStartIconDrag = true;
         this.addStartIcon();
@@ -84,6 +54,20 @@ export class EditorScene extends Scene {
             }
             textField.value = '';
         });
+    }
+
+    public init(): void {
+        try {
+            const storedLevelJSON = localStorage.getItem(STORED_LEVEL_KEY);
+            if (storedLevelJSON !== null) {
+                this.level = defaultLevel;
+            } else {
+                this.level = defaultLevel;
+            }
+        } catch (error) {
+            // tslint:disable-next-line: no-console
+            console.log(error);
+        }
     }
 
     public adjustPathsToNameChange(oldName: string, newName: string) {
@@ -214,6 +198,7 @@ export class EditorScene extends Scene {
     }
 
     private addNewCityContainer(
+        addToLevelCities: boolean,
         city: ICity = {
             production: -1,
             stock: 5,
@@ -222,7 +207,10 @@ export class EditorScene extends Scene {
             y: 400,
         }
     ) {
-        const indexOfNewCity = this.level.cities.push(city) - 1;
+        if (addToLevelCities) {
+            this.level.cities.push(city);
+        }
+        const indexOfNewCity = this.level.cities.length - 1;
         const cityInList = this.level.cities[indexOfNewCity];
         const newEconomy = { stock: city.stock, production: city.production };
         const stockAdd = (summand: number) => {
@@ -235,7 +223,6 @@ export class EditorScene extends Scene {
             cityInList.x = x;
             cityInList.y = y;
         };
-
         this.containerArray.push(
             new CityContainer(
                 this,
@@ -254,7 +241,7 @@ export class EditorScene extends Scene {
 
     private creationButtonClicked() {
         const containerName = this.containerArray.length.toString();
-        this.addNewCityContainer();
+        this.addNewCityContainer(true);
     }
 
     private addCityCreationButton() {
@@ -320,6 +307,7 @@ export class EditorScene extends Scene {
                 level: tryOutLevel,
             });
             const jsonTryOutLevel = JSON.stringify(tryOutLevel);
+            localStorage.removeItem(STORED_LEVEL_KEY);
             localStorage.setItem(STORED_LEVEL_KEY, jsonTryOutLevel);
             const textField = document.getElementById('text');
             textField.remove();

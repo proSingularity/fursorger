@@ -4,7 +4,6 @@ const textStyle = {
     fill: '#000000',
 };
 
-export const PLAYER_STOCK_INDEX = 0;
 export class BackpackContainer extends Phaser.GameObjects.Container {
     private onBackpackPlus!: () => void;
     private onBackpackMinus!: () => void;
