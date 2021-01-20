@@ -60,13 +60,12 @@ export class EditorScene extends Scene {
         try {
             const storedLevelJSON = localStorage.getItem(STORED_LEVEL_KEY);
             if (storedLevelJSON !== null) {
-                this.level = defaultLevel;
+                this.level = JSON.parse(storedLevelJSON);
             } else {
                 this.level = defaultLevel;
             }
         } catch (error) {
             // tslint:disable-next-line: no-console
-            console.log(error);
         }
     }
 
@@ -210,8 +209,9 @@ export class EditorScene extends Scene {
         if (addToLevelCities) {
             this.level.cities.push(city);
         }
-        const indexOfNewCity = this.level.cities.length - 1;
-        const cityInList = this.level.cities[indexOfNewCity];
+        const cityInList = this.level.cities.find(
+            container => city.name === container.name
+        );
         const newEconomy = { stock: city.stock, production: city.production };
         const stockAdd = (summand: number) => {
             cityInList.stock += summand;
