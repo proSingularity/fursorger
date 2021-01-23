@@ -363,16 +363,28 @@ export class EditorScene extends Scene {
             .setScale(100 / 200);
 
         button.on('pointerup', () => {
-            const tryOutLevel = this.level;
-            this.scene.add('mainScene', MainScene, true, {
-                level: tryOutLevel,
-            });
-            const jsonTryOutLevel = JSON.stringify(tryOutLevel);
-            localStorage.removeItem(STORED_LEVEL_KEY);
-            localStorage.setItem(STORED_LEVEL_KEY, jsonTryOutLevel);
-            const textField = document.getElementById('text');
-            textField.remove();
-            this.scene.remove(this);
+            if (this.startCityExists()) {
+                this.goToMainScene();
+            }
         });
+    }
+
+    private startCityExists() {
+        return this.containerArray.some(
+            container => container.name === this.level.player.location
+        );
+    }
+
+    private goToMainScene() {
+        const tryOutLevel = this.level;
+        this.scene.add('mainScene', MainScene, true, {
+            level: tryOutLevel,
+        });
+        const jsonTryOutLevel = JSON.stringify(tryOutLevel);
+        localStorage.removeItem(STORED_LEVEL_KEY);
+        localStorage.setItem(STORED_LEVEL_KEY, jsonTryOutLevel);
+        const textField = document.getElementById('text');
+        textField.remove();
+        this.scene.remove(this);
     }
 }
