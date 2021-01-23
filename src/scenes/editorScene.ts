@@ -10,6 +10,9 @@ import { MainScene } from './mainScene';
 
 const STORED_LEVEL_KEY = 'STORE_EDITOR';
 
+// TODO: make this depending to screen size
+const DEFAULT_START_ICON_X = 300;
+const DEFAULT_START_ICON_Y = 400;
 export class EditorScene extends Scene {
     private containerArray!: CityContainer[];
     private travelPathLines!: GameObjects.Graphics;
@@ -40,6 +43,8 @@ export class EditorScene extends Scene {
         this.addCityCreationButton();
         this.addBackpackContainer();
         this.addExportLevelButton();
+        this.addBlankLevelButton();
+        this.addDeleteCityButton();
         this.addMainSceneButton();
         const textField = document.createElement('input');
         textField.type = 'text';
@@ -149,8 +154,13 @@ export class EditorScene extends Scene {
         const startCityContainer = this.containerArray.find(
             container => container.name === startCityName
         );
-        this.startIcon.x = startCityContainer.x - 50;
-        this.startIcon.y = startCityContainer.y - 80;
+        if (startCityContainer) {
+            this.startIcon.x = startCityContainer.x - 50;
+            this.startIcon.y = startCityContainer.y - 80;
+        } else {
+            this.startIcon.x = DEFAULT_START_ICON_X;
+            this.startIcon.y = DEFAULT_START_ICON_Y;
+        }
     }
 
     private getStartIconPoint() {
@@ -293,6 +303,57 @@ export class EditorScene extends Scene {
             saveAs(blob, 'level.json');
         };
         button.on('pointerup', saveToFile);
+    }
+
+    private addBlankLevelButton() {
+        const button = this.add
+            .image(60, 600, 'export')
+            .setInteractive()
+            .setScale(100 / 180);
+
+        const deleteCitiesAndPaths = () => {
+            const cityNames = this.containerArray.map(
+                cityContainer => cityContainer.name
+            );
+            cityNames.forEach(name => this.removeCity(name));
+        };
+
+        button.on('pointerup', deleteCitiesAndPaths);
+    }
+
+    private addDeleteCityButton() {
+        const button = this.add
+            .image(180, 600, 'export')
+            .setInteractive()
+            .setScale(100 / 180);
+        const deleteCityByName = () => {
+            const chosenCity = this.containerArray.find(city =>
+                city.isChosen()
+            );
+            if (chosenCity) {
+                this.removeCity(chosenCity.name);
+            }
+        };
+
+        button.on('pointerup', deleteCityByName);
+    }
+
+    private removeCity(cityName: string) {
+        this.level.cities = this.level.cities.filter(
+            city => city.name !== cityName
+        );
+        this.level.travelPaths = this.level.travelPaths.filter(
+            path => path.first !== cityName && path.second !== cityName
+        );
+        this.containerArray
+            .find(container => container.name === cityName)
+            .destroy();
+        this.containerArray = this.containerArray.filter(
+            container => container.name !== cityName
+        );
+        if (this.level.player.location === cityName) {
+            this.level.player.location = '';
+        }
     }
 
     private addMainSceneButton() {
