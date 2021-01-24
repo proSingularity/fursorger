@@ -5,6 +5,8 @@ import { BackpackContainer } from '../components/BackPackContainer';
 import { BlancLevelButton } from '../components/BlancLevelButton';
 import { CityContainer, IEconomyHandlers } from '../components/CityContainer';
 import { DeleteCityButton } from '../components/DeleteCityButton';
+import { DownloadButton } from '../components/DownloadButton';
+import { PlayMyMapButton } from '../components/PlayMyMapButton';
 import { defaultLevel } from '../levels/defaultLevel';
 import { ICity, ILevel } from '../levels/ILevel';
 import { Color, toHex } from '../styles/Color';
@@ -114,7 +116,7 @@ export class EditorScene extends Scene {
 
     private addStartIcon() {
         this.startIcon = this.add
-            .image(550, 360, 'startArrow')
+            .image(550, 360, 'startCityArrow')
             .setInteractive();
         this.startIcon.setScale(0.3, 0.3);
         this.input.setDraggable(this.startIcon);
@@ -293,10 +295,6 @@ export class EditorScene extends Scene {
     }
 
     private addExportLevelButton() {
-        const button = this.add
-            .image(60, 540, 'export')
-            .setInteractive()
-            .setScale(100 / 180);
         const saveToFile = () => {
             const data = JSON.stringify(this.level, null, 4);
             const blob = new Blob([data], {
@@ -304,7 +302,7 @@ export class EditorScene extends Scene {
             });
             saveAs(blob, 'level.json');
         };
-        button.on('pointerup', saveToFile);
+        DownloadButton(this, saveToFile);
     }
 
     private addBlankLevelButton() {
@@ -348,16 +346,12 @@ export class EditorScene extends Scene {
     }
 
     private addMainSceneButton() {
-        const button = this.add
-            .image(220, 540, 'play')
-            .setInteractive()
-            .setScale(100 / 200);
-
-        button.on('pointerup', () => {
+        const playMap = () => {
             if (this.startCityExists()) {
                 this.goToMainScene();
             }
-        });
+        };
+        PlayMyMapButton(this, playMap);
     }
 
     private startCityExists() {

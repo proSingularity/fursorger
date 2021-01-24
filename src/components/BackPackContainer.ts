@@ -1,8 +1,7 @@
 import { Scene } from 'phaser';
-const textStyle = {
-    font: '48px Metamorphous',
-    fill: '#000000',
-};
+import { EditorSceneCfg } from '../styles/EditorSceneCfg';
+import { setTextShadow } from '../styles/setTextShadow';
+import { TextConfig } from '../styles/Text';
 
 export class BackpackContainer extends Phaser.GameObjects.Container {
     private onBackpackPlus!: () => void;
@@ -23,24 +22,23 @@ export class BackpackContainer extends Phaser.GameObjects.Container {
     }
 
     private addStockComponents() {
-        const backpackX = 680;
-        const backpackY = 40;
-        const backpackTextY = backpackY - 25;
-        const backpackTextX = backpackX + 40;
-        const backpackImage = this.scene.add.image(
-            backpackX,
-            backpackY,
-            'backpack'
-        );
+        const backpackX = EditorSceneCfg.playerStock.img.x;
+        const backpackY = EditorSceneCfg.playerStock.img.y;
+        const backpackTextX = EditorSceneCfg.playerStock.text.x;
+        const backpackTextY = EditorSceneCfg.playerStock.text.y;
+        const backpackImage = this.scene.add
+            .image(backpackX, backpackY, 'backpack')
+            .setScale(0.8);
         const backpackText = this.scene.add.text(
             backpackTextX,
             backpackTextY,
             '0',
-            textStyle
+            TextConfig.xl
         );
+        setTextShadow(backpackText);
 
         const backpackButtonY = backpackY + backpackImage.height / 2 - 25;
-        const backpackButtonX = backpackX - 50;
+        const backpackButtonX = backpackTextX + 50;
 
         const backpackPlus = this.scene.add
             .image(backpackButtonX, backpackButtonY - 20, 'plus')

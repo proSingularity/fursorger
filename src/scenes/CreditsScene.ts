@@ -1,7 +1,7 @@
-import { Input, Scene } from "phaser";
-import { BackgroundImage } from "../components/BackgroundImage";
-import { CreditsText } from "../components/CreditsText";
-import { ITitleSceneInitData, TitleScene } from "./TitleScene";
+import { Input, Scene } from 'phaser';
+import { BackgroundImage } from '../components/BackgroundImage';
+import { CreditsText } from '../components/CreditsText';
+import { ITitleSceneInitData, TitleScene } from './TitleScene';
 
 const cfg = { fadeOut: 800, timeOut: 320 };
 
@@ -9,15 +9,15 @@ export class CreditsScene extends Scene {
     private timers: number[] = [];
     private shuttingDown = false;
 
-    constructor(key = "CreditsScene") {
+    constructor(key = 'CreditsScene') {
         super(key);
     }
 
     public create() {
-        new BackgroundImage(this, "title");
+        new BackgroundImage(this, 'title');
         this.addCredits();
         this.stopEventPropagationToOtherScenes();
-        this.input.on("pointerup", () => {
+        this.input.on('pointerup', () => {
             this.shuttingDown = true;
             this.handleCreditEnd();
         });
@@ -39,9 +39,9 @@ export class CreditsScene extends Scene {
     }
 
     private handleCreditEnd() {
-        this.input.removeListener("pointerup");
+        this.input.removeListener('pointerup');
         const data: ITitleSceneInitData = { fadeInEnabled: false };
-        this.goto("TitleScene", TitleScene, data);
+        this.goto('TitleScene', TitleScene, data);
     }
 
     private addCredits() {
@@ -64,64 +64,65 @@ export class CreditsScene extends Scene {
 }
 
 const credits = [
-    { text: "Der Fürsorger", isHeader: true },
-    { text: "" },
-    { text: "" },
-    { text: "" },
-    { text: "Story and Script", isHeader: true },
-    { text: "" },
-    { text: "Matthias Möser" },
-    { text: "Mirco Kraenz" },
-    { text: "" },
-    { text: "" },
-    { text: "Programming", isHeader: true },
-    { text: "" },
-    { text: "Mirco Kraenz" },
-    { text: "Matthias Möser" },
-    { text: "" },
-    { text: "" },
-    { text: "Art", isHeader: true },
-    { text: "" },
-    { text: "Mirco Kraenz" },
-    { text: "" },
-    { text: "Icon made by those-icons from www.flaticon.com" },
-    { text: "Icon made by srip from www.flaticon.com" },
-    { text: "Icon made by monkik from www.flaticon.com" },
-    { text: "Icon made by freepik from www.flaticon.com" },
-    { text: "Icon made by prosymbols from www.flaticon.com" },
-    { text: "Icon made by gregor-cresnar from www.flaticon.com" },
-    { text: "Icon made by roundicons from www.flaticon.com" },
-    { text: "" },
+    { text: 'Der Fürsorger', isHeader: true },
+    { text: '' },
+    { text: '' },
+    { text: '' },
+    { text: 'Story and Script', isHeader: true },
+    { text: '' },
+    { text: 'Matthias Möser' },
+    { text: 'Mirco Kraenz' },
+    { text: '' },
+    { text: '' },
+    { text: 'Programming', isHeader: true },
+    { text: '' },
+    { text: 'Mirco Kraenz' },
+    { text: 'Matthias Möser' },
+    { text: '' },
+    { text: '' },
+    { text: 'Art', isHeader: true },
+    { text: '' },
+    { text: 'Mirco Kraenz' },
+    { text: '' },
+    { text: 'Icon made by those-icons from www.flaticon.com' },
+    { text: 'Icon made by srip from www.flaticon.com' },
+    { text: 'Icon made by monkik from www.flaticon.com' },
+    { text: 'Icon made by mavadee from www.flaticon.com' },
+    { text: 'Icon made by freepik from www.flaticon.com' },
+    { text: 'Icon made by prosymbols from www.flaticon.com' },
+    { text: 'Icon made by gregor-cresnar from www.flaticon.com' },
+    { text: 'Icon made by roundicons from www.flaticon.com' },
+    { text: '' },
     {
         text:
-            "Font Metamorphous Copyright (c) 2011 by Sorkin Type Co\n(www.sorkintype.com) under SIL OFL 1.1",
+            'Font Metamorphous Copyright (c) 2011 by Sorkin Type Co\n(www.sorkintype.com) under SIL OFL 1.1',
     },
-    { text: "" },
+    { text: '' },
     {
         text:
-            "Font IMFellEnglishSC Copyright (c) 2010, Igino Marini\n(mail@iginomarini.com) under SIL OFL 1.1",
+            'Font IMFellEnglishSC Copyright (c) 2010, Igino Marini\n(mail@iginomarini.com) under SIL OFL 1.1',
     },
-    { text: "" },
+    { text: '' },
     {
         text:
-            "SIL OFL 1.1 available at\nhttps://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web",
+            'SIL OFL 1.1 available at\nhttps://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web',
     },
-    { text: "" },
-    { text: "" },
-    { text: "" },
-    { text: "Music and Sound", isHeader: true },
-    { text: "" },
-    { text: "Clicking coins by Hansjörg Malthaner under CC-BY 3.0" },
-    { text: "Howling Wind from Dynamicell at freesound.org under CC-BY 3.0" },
-    { text: "" },
-    { text: "" },
-    { text: "Special Thanks", isHeader: true },
-    { text: "" },
-    { text: "to all our dear friends" },
-    { text: "The generous CC0 community" },
-    { text: "Star Trek: Voyager for inspiration!" },
-    { text: "Inkarnate.com for their beautiful map creation tool" },
-    { text: "" },
-    { text: "" },
-    { text: "Made with Phaser 3", isHeader: true },
+    { text: '' },
+    { text: '' },
+    { text: '' },
+    { text: 'Music and Sound', isHeader: true },
+    { text: '' },
+    { text: 'Clicking coins by Hansjörg Malthaner under CC-BY 3.0' },
+    { text: 'Howling Wind from Dynamicell at freesound.org under CC-BY 3.0' },
+    { text: '' },
+    { text: '' },
+    { text: 'Special Thanks', isHeader: true },
+    { text: '' },
+    { text: 'to all our dear friends' },
+    { text: 'The generous CC0 community' },
+    { text: 'Star Trek: Voyager for inspiration!' },
+    { text: 'Inkarnate.com for their beautiful map creation tool' },
+    { text: '' },
+    { text: '' },
+    { text: 'Made with Phaser 3', isHeader: true },
 ];

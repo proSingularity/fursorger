@@ -153,8 +153,10 @@ export class CityContainer extends Phaser.GameObjects.Container {
             .setScale(0.5)
             .setInteractive();
         minusStock.on('pointerup', () => {
-            this.economy.stock -= 1;
-            this.onEconomy.addToStock(-1);
+            if (this.economy.stock > 0) {
+                this.economy.stock -= 1;
+                this.onEconomy.addToStock(-1);
+            }
         });
         minusStock.setVisible(false);
 
