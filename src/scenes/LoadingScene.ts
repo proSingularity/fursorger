@@ -3,6 +3,7 @@ import { DEV } from '../dev-config';
 import { Color, toHex } from '../styles/Color';
 import { setDefaultTextStyle, TextConfig } from '../styles/Text';
 import { CreditsScene } from './CreditsScene';
+import { EditorScene } from './editorScene';
 import { GoodEndScene } from './GoodEndScene';
 import { MainScene } from './mainScene';
 import { TitleScene } from './TitleScene';
@@ -50,6 +51,8 @@ export class LoadingScene extends Scene {
             .image('title', img('title.jpg'))
             .image('banner', img('banner.png'))
             .image('startArrow', img('StartArrow140x324.png'))
+            .image('newFile', img('newFile.png'))
+            .image('trashbin', img('trashBin.png'))
             .svg('shop', img('shop.svg'))
             .svg('factory', img('power-plant.svg'))
             .svg('restart', img('reload64x64.svg'))
@@ -123,7 +126,9 @@ export class LoadingScene extends Scene {
         this.load.on('progress', this.getProgressBarFiller(progressBar));
         this.load.on('fileprogress', this.getAssetTextWriter(assetText));
         this.load.on('complete', () => {
-            if (DEV.startInWinScene) {
+            if (DEV.startInEditor) {
+                this.scene.add('EditorScene', EditorScene, true);
+            } else if (DEV.startInWinScene) {
                 this.scene.add('GoodEndScene', GoodEndScene, true);
             } else if (DEV.skipTitle) {
                 this.scene.add('MainScene', MainScene, true);

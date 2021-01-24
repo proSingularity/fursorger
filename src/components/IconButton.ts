@@ -1,6 +1,6 @@
-import { assign } from "lodash";
-import { GameObjects, Scene } from "phaser";
-import { GrowShrinkAnimPlugin } from "../anims/GrowShrinkAnimPlugin";
+import { assign } from 'lodash';
+import { GameObjects, Scene } from 'phaser';
+import { GrowShrinkAnimPlugin } from '../anims/GrowShrinkAnimPlugin';
 
 export class IconButton extends GameObjects.Image {
     private icon: GameObjects.Image & { baseScale: number };
@@ -12,14 +12,15 @@ export class IconButton extends GameObjects.Image {
         onPointerUp: () => void,
         x: number,
         y: number,
-        iconCfg: { baseScale: 1; texture: string }
+        iconCfg: { baseScale: number; texture: string }
     ) {
-        super(scene, x, y, "octagon");
+        super(scene, x, y, 'octagon');
         scene.add.existing(this);
         this.setInteractive();
-        this.on("pointerup", onPointerUp);
+        this.on('pointerup', onPointerUp);
         const icon = this.scene.add.image(x, y, iconCfg.texture);
         this.icon = assign(icon, { baseScale: iconCfg.baseScale });
+        this.icon.setScale(iconCfg.baseScale);
         this.setScale(this.baseScale);
         new GrowShrinkAnimPlugin(scene, this);
         new GrowShrinkAnimPlugin(scene, this.icon, {

@@ -2,7 +2,9 @@ import { saveAs } from 'file-saver';
 import { GameObjects, Scene } from 'phaser';
 import { BackgroundImage } from '../components/BackgroundImage';
 import { BackpackContainer } from '../components/BackPackContainer';
+import { BlancLevelButton } from '../components/BlancLevelButton';
 import { CityContainer, IEconomyHandlers } from '../components/CityContainer';
+import { DeleteCityButton } from '../components/DeleteCityButton';
 import { defaultLevel } from '../levels/defaultLevel';
 import { ICity, ILevel } from '../levels/ILevel';
 import { Color, toHex } from '../styles/Color';
@@ -306,26 +308,16 @@ export class EditorScene extends Scene {
     }
 
     private addBlankLevelButton() {
-        const button = this.add
-            .image(60, 600, 'export')
-            .setInteractive()
-            .setScale(100 / 180);
-
         const deleteCitiesAndPaths = () => {
             const cityNames = this.containerArray.map(
                 cityContainer => cityContainer.name
             );
             cityNames.forEach(name => this.removeCity(name));
         };
-
-        button.on('pointerup', deleteCitiesAndPaths);
+        BlancLevelButton(this, deleteCitiesAndPaths);
     }
 
     private addDeleteCityButton() {
-        const button = this.add
-            .image(180, 600, 'export')
-            .setInteractive()
-            .setScale(100 / 180);
         const deleteCityByName = () => {
             const chosenCity = this.containerArray.find(city =>
                 city.isChosen()
@@ -334,8 +326,7 @@ export class EditorScene extends Scene {
                 this.removeCity(chosenCity.name);
             }
         };
-
-        button.on('pointerup', deleteCityByName);
+        DeleteCityButton(this, deleteCityByName);
     }
 
     private removeCity(cityName: string) {
