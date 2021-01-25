@@ -303,11 +303,11 @@ export class EditorScene extends Scene {
 
     private addExportLevelButton() {
         const saveToFile = () => {
-            /*const data = JSON.stringify(this.level, null, 4);
+            const data = JSON.stringify(this.level, null, 4);
             const blob = new Blob([data], {
                 type: 'application/json',
             });
-            saveAs(blob, 'level.json');*/
+            saveAs(blob, 'level.json');
         };
         DownloadButton(this, saveToFile);
     }
