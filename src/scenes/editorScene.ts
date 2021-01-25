@@ -1,4 +1,3 @@
-import { saveAs } from 'file-saver';
 import { GameObjects, Scene } from 'phaser';
 import { BackgroundImage } from '../components/BackgroundImage';
 import { BackpackContainer } from '../components/BackPackContainer';
@@ -59,7 +58,7 @@ export class EditorScene extends Scene {
             if (focusedCity) {
                 const oldContainerName = focusedCity.name;
                 focusedCity.setName(textField.value);
-                this.adjustPathsToNameChange(oldContainerName, textField.value);
+                this.adjustLevelToNameChange(oldContainerName, textField.value);
             }
             textField.value = '';
         });
@@ -78,7 +77,7 @@ export class EditorScene extends Scene {
         }
     }
 
-    public adjustPathsToNameChange(oldName: string, newName: string) {
+    public adjustLevelToNameChange(oldName: string, newName: string) {
         this.level.travelPaths.forEach(path => {
             if (path.first === oldName) {
                 path.first = newName;
@@ -87,6 +86,14 @@ export class EditorScene extends Scene {
                 path.second = newName;
             }
         });
+        this.level.cities.forEach(city => {
+            if (city.name === oldName) {
+                city.name = newName;
+            }
+        });
+        if (this.level.player.location === oldName) {
+            this.level.player.location = newName;
+        }
     }
 
     public update() {
@@ -296,11 +303,11 @@ export class EditorScene extends Scene {
 
     private addExportLevelButton() {
         const saveToFile = () => {
-            const data = JSON.stringify(this.level, null, 4);
+            /*const data = JSON.stringify(this.level, null, 4);
             const blob = new Blob([data], {
                 type: 'application/json',
             });
-            saveAs(blob, 'level.json');
+            saveAs(blob, 'level.json');*/
         };
         DownloadButton(this, saveToFile);
     }

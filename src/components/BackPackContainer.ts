@@ -65,11 +65,6 @@ export class BackpackContainer extends Phaser.GameObjects.Container {
             }
         });
 
-        const backpackContainer = this.add([
-            backpackText,
-            backpackImage,
-            backpackPlus,
-            backpackMinus,
-        ]);
+        this.add([backpackText, backpackImage, backpackPlus, backpackMinus]);
     }
 }
