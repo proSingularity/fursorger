@@ -55,7 +55,8 @@ export class EditorScene extends Scene {
         this.add.dom(100, 50, textField);
         textField.addEventListener('change', () => {
             const focusedCity = this.getActivatedCities()[0];
-            if (focusedCity) {
+            // TODO: Add user notification for case that second condition is not fulfilled!
+            if (focusedCity && this.noCityHasThisName(textField.value)) {
                 const oldContainerName = focusedCity.name;
                 focusedCity.setName(textField.value);
                 this.adjustLevelToNameChange(oldContainerName, textField.value);
@@ -115,6 +116,10 @@ export class EditorScene extends Scene {
                 otherContainer: activatedCities[1],
             });
         }
+    }
+
+    private noCityHasThisName(name: string) {
+        return !this.level.cities.some(city => city.name === name);
     }
 
     private getActivatedCities() {
@@ -217,12 +222,20 @@ export class EditorScene extends Scene {
         });
     }
 
+    private getDefaultCityName() {
+        const numberOfCities = this.level.cities.length;
+        const possibleNames = new Array(numberOfCities + 1)
+            .fill(1)
+            .map((entry, index) => index.toString());
+        return possibleNames.find(name => this.noCityHasThisName(name));
+    }
+
     private addNewCityContainer(
         addToLevelCities: boolean,
         city: ICity = {
             production: -1,
             stock: 5,
-            name: this.level.cities.length.toString(),
+            name: this.getDefaultCityName(),
             x: 300,
             y: 400,
         }
